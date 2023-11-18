@@ -1,5 +1,5 @@
 # keyboards
-Supporting simulated annealing code for [video](https://youtu.be/188fipF-i5I)https://youtu.be/188fipF-i5I
+Supporting simulated annealing code for [video] (https://youtu.be/188fipF-i5I)https://youtu.be/188fipF-i5I
 
 Written in Julia... because it's fast, easy to read, and annoys my labmates.
 
