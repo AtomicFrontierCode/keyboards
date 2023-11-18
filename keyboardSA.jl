@@ -723,15 +723,16 @@ function runSA()
     bestGenome = currentGenome
     bestObjective = currentObjective
 
-    temperature  = 100
+    temperature  = 500
     epoch = 20
     coolingRate = 0.99
+    num_iterations = 25000
 
     drawKeyboard(bestGenome, 0)
 
     # run SA
     staticCount = 0.0
-    while temperature > 10
+    for iteration in 1:num_iterations
         # ~ create new genome ~
         newGenome = shuffleGenome(currentGenome, 2)
 
