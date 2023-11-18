@@ -8,7 +8,7 @@ using Statistics
 
 
 # ~~~ data ~~~
-bookPath = "MyBook.txt"
+bookPath = "myBook.txt"
 
 # ~~~ weights ~~~
 distanceEffort = 1 # at 2 distance penalty is squared
