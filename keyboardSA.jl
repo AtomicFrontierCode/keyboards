@@ -485,7 +485,7 @@ function drawKeyboard(myGenome, id)
     end
     
     plot!(aspect_ratio = 1, legend = false)
-    savefig("$(Int(id)).png")
+    savefig("$id.png")
 
 end
 
