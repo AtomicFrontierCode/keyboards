@@ -4,11 +4,15 @@ import Pkg
 Pkg.activate(@__DIR__)
 Pkg.instantiate()
 using Plots
-using Random
+using Random, StableRNGs
 using Base.Threads
 using BenchmarkTools
 using Statistics
 
+
+# ~~~ rng ~~~
+seed = 123456
+const rng = StableRNGs.LehmerRNG(seed)
 
 # ~~~ data ~~~
 bookPath = "myBook.txt"
@@ -452,7 +456,7 @@ handList = [1, 1, 1, 1, 2, 2, 2, 2] # what finger is with which hand
 # ### KEYBOARD FUNCTIONS ###
 function createGenome()
     # setup
-    myGenome = shuffle(letterList)
+    myGenome = shuffle(rng, letterList)
 
     # return
     return myGenome
@@ -578,6 +582,7 @@ function doKeypress(myFingerList, myGenome, keyPress, oldFinger, oldHand)
 
             # ~ combined weighting
             penalty = sum([distancePenalty, doubleFingerPenalty, doubleHandPenalty, fingerPenalty, rowPenalty] .* effortWeighting)
+            #penalty = sum(x * effortWeighting for x in (distancePenalty, doubleFingerPenalty, doubleHandPenalty, fingerPenalty, rowPenalty))
             newObjective = objectiveCounter + penalty
 
             # ~ save
@@ -689,8 +694,8 @@ function shuffleGenome(currentGenome, temperature)
     noSwitches = Int(maximum([2, minimum([floor(temperature/100), 46])]))
 
     # positions of switched letterList
-    switchedPositions = randperm(46)[1:noSwitches]
-    newPositions = shuffle(copy(switchedPositions))
+    switchedPositions = randperm(rng, 46)[1:noSwitches]
+    newPositions = shuffle(rng, copy(switchedPositions))
 
     # create new genome by shuffeling
     newGenome = copy(currentGenome)
@@ -707,16 +712,23 @@ function shuffleGenome(currentGenome, temperature)
 end
 
 
-function runSA()
-    println("Running code...")
+function runSA(;
+    temperature = 500,
+    epoch = 20,
+    coolingRate = 0.99,
+    num_iterations = 25000,
+    save_current_best = :plot,
+    verbose = true,
+)
+    verbose && println("Running code...")
     # baseline
-    print("Calculating raw baseline: ")
+    verbose && print("Calculating raw baseline: ")
     global QWERTYscore = baselineObjectiveFunction(baselineLayout) # yes its a global, fight me
-    println(QWERTYscore)
+    verbose && println(QWERTYscore)
 
-    println("From here everything is reletive with + % worse and - % better than this baseline \n Note that best layout is being saved as a png at each step. Kill program when satisfied.")
+    verbose && println("From here everything is reletive with + % worse and - % better than this baseline \n Note that best layout is being saved as a png at each step. Kill program when satisfied.")
 
-    println("Temperature \t Best Score \t New Score")
+    verbose && println("Temperature \t Best Score \t New Score")
 
 
     # setup
@@ -725,11 +737,6 @@ function runSA()
 
     bestGenome = currentGenome
     bestObjective = currentObjective
-
-    temperature  = 500
-    epoch = 20
-    coolingRate = 0.99
-    num_iterations = 25000
 
     drawKeyboard(bestGenome, 0)
 
@@ -743,7 +750,7 @@ function runSA()
         newObjective = objectiveFunction(newGenome)
         delta = newObjective - currentObjective
 
-        println(round(temperature, digits = 2), "\t", round(bestObjective, digits=2), "\t", round(newObjective, digits=2))
+        verbose && println(round(temperature, digits = 2), "\t", round(bestObjective, digits=2), "\t", round(newObjective, digits=2))
 
         
 
@@ -761,12 +768,21 @@ function runSA()
 
                 #staticCount = 0.0
 
-                println("(new best, png being saved)")
-                
-
-                drawKeyboard(bestGenome, iteration)
+                if save_current_best === :plot
+                    verbose && println("(new best, png being saved)")
+                    drawKeyboard(bestGenome, iteration)
+                else
+                    verbose && println("(new best, text being saved)")
+                    open("bestGenomes.txt", "a") do io
+                        print(io, iteration, ":")
+                        for c in bestGenome
+                            print(io, c)
+                        end
+                        println(io)
+                    end
+                end
             end
-        elseif exp(-delta/temperature) > rand()
+        elseif exp(-delta/temperature) > rand(rng)
             #print(" *")
             currentGenome = newGenome
             currentObjective = newObjective
@@ -781,7 +797,7 @@ function runSA()
             staticCount = 0.0
             temperature = temperature * coolingRate
 
-            if rand() < 0.5
+            if rand(rng) < 0.5
                 currentGenome = bestGenome
                 currentObjective = bestObjective
             end
@@ -798,4 +814,5 @@ end
 
 
 # ### RUN ###
-runSA()
+Random.seed!(rng, seed)
+@time runSA()
