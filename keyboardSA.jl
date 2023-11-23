@@ -1,5 +1,8 @@
 # ### SETUP ###
 # ~~~ libraries ~~~
+import Pkg
+Pkg.activate(@__DIR__)
+Pkg.instantiate()
 using Plots
 using Random
 using Base.Threads
