@@ -730,7 +730,9 @@ function runSA(
 
     # run SA
     staticCount = 0.0
-    for iteration in 1:num_iterations
+    iteration = 0
+    while iteration <= num_iterations && temperature > 1.0
+        iteration += 1
         # ~ create new genome ~
         newGenome = shuffleGenome(currentGenome, 2)
 
