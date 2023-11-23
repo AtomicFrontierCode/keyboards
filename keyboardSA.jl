@@ -522,7 +522,7 @@ end
 # ### OBJECTIVE FUNCTIONS ###
 function determineKeypress(currentCharacter)
     # setup
-    keyPress = "NONE"
+    keyPress = nothing
 
     # proceed if valid key (e.g. we dont't care about spaces now)
     if haskey(keyMapDict, currentCharacter)
@@ -596,7 +596,7 @@ function doKeypress(myFingerList, myGenome, keyPress, oldFinger, oldHand, curren
     return myFingerList, oldFinger, oldHand
 end
 
-function objectiveFunction(myGenome, currentLayoutMap)
+function objectiveFunction(file, myGenome, currentLayoutMap)
     # setup
     objective = 0
    
@@ -612,25 +612,18 @@ function objectiveFunction(myGenome, currentLayoutMap)
     end
     
     # load text
-    file = open(bookPath, "r")
     oldFinger = 0
     oldHand = 0
 
-    try
-        while !eof(file)
-            currentCharacter = read(file, Char)
+    for currentCharacter in file
+        # determine keypress
+        keyPress = determineKeypress(currentCharacter)
 
-            # determine keypress
-            keyPress = determineKeypress(currentCharacter)
-
-            # do keypress
-            if keyPress != "NONE"
-                myFingerList, oldFinger, oldHand = doKeypress(myFingerList, myGenome, keyPress, oldFinger, oldHand,
-                                                              currentLayoutMap)
-            end
+        # do keypress
+        if keyPress !== nothing
+            myFingerList, oldFinger, oldHand = doKeypress(myFingerList, myGenome, keyPress, oldFinger, oldHand,
+                                                          currentLayoutMap)
         end
-    finally
-        close(file)
     end
 
     # calculate objective
@@ -641,7 +634,7 @@ function objectiveFunction(myGenome, currentLayoutMap)
     return objective
 end
 
-function baselineObjectiveFunction(myGenome, currentLayoutMap) # same as previous but for getting QWERTY baseline
+function baselineObjectiveFunction(file, myGenome, currentLayoutMap) # same as previous but for getting QWERTY baseline
     # setup
     objective = 0
    
@@ -656,26 +649,18 @@ function baselineObjectiveFunction(myGenome, currentLayoutMap) # same as previou
         end
     end
     
-    # load text
-    file = open(bookPath, "r")
     oldFinger = 0
     oldHand = 0
 
-    try
-        while !eof(file)
-            currentCharacter = read(file, Char)
+    for currentCharacter in file
+        # determine keypress
+        keyPress = determineKeypress(currentCharacter)
 
-            # determine keypress
-            keyPress = determineKeypress(currentCharacter)
-
-            # do keypress
-            if keyPress != "NONE"
-                myFingerList, oldFinger, oldHand = doKeypress(myFingerList, myGenome, keyPress, oldFinger, oldHand,
-                                                              currentLayoutMap)
-            end
+        # do keypress
+        if keyPress !== nothing
+            myFingerList, oldFinger, oldHand = doKeypress(myFingerList, myGenome, keyPress, oldFinger, oldHand,
+                                                          currentLayoutMap)
         end
-    finally
-        close(file)
     end
 
     # calculate objective
@@ -721,10 +706,12 @@ function runSA(
     verbose = true,
 )
     currentLayoutMap = layoutMap
+    file = open(io->read(io, String), bookPath, "r")
+
     verbose && println("Running code...")
     # baseline
     verbose && print("Calculating raw baseline: ")
-    global QWERTYscore = baselineObjectiveFunction(baselineLayout, currentLayoutMap) # yes its a global, fight me
+    global QWERTYscore = baselineObjectiveFunction(file, baselineLayout, currentLayoutMap) # yes its a global, fight me
     verbose && println(QWERTYscore)
 
     verbose && println("From here everything is reletive with + % worse and - % better than this baseline \n Note that best layout is being saved as a png at each step. Kill program when satisfied.")
@@ -734,7 +721,7 @@ function runSA(
 
     # setup
     currentGenome = createGenome()
-    currentObjective = objectiveFunction(currentGenome, currentLayoutMap)
+    currentObjective = objectiveFunction(file, currentGenome, currentLayoutMap)
 
     bestGenome = currentGenome
     bestObjective = currentObjective
@@ -748,7 +735,7 @@ function runSA(
         newGenome = shuffleGenome(currentGenome, 2)
 
         # ~ asess ~
-        newObjective = objectiveFunction(newGenome, currentLayoutMap)
+        newObjective = objectiveFunction(file, newGenome, currentLayoutMap)
         delta = newObjective - currentObjective
 
         verbose && println(round(temperature, digits = 2), "\t", round(bestObjective, digits=2), "\t", round(newObjective, digits=2))
