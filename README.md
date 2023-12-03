@@ -4,7 +4,7 @@ Supporting simulated annealing code for the [Why I Made The World's Worst Keyboa
 
 Written in Julia... because it's fast, easy to read, and annoys my labmates.
 
-To run, clone this repository and start Julia with `julia--project=.` and run `include("keyboardSA.jl")`. It should start by
+To run, clone this repository and start Julia with `julia --project=.` and run `include("keyboardSA.jl")`. It should start by
 benchmarking your training data (myBook.txt) against QWERTY followed by building
 it's own optimal layout. Change the number of iterations and cooling rates as
 desired within the SA() function. The terminal will give some indication of
