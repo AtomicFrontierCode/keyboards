@@ -9,6 +9,21 @@ using Base.Threads
 using BenchmarkTools
 using Statistics
 
+## for new section of code
+println("1: default, 2:lock ~0-9, 3:lock all, ~0-9 -+[];',.?")
+userLocks = parse(Int, readline())
+if userLocks > 3
+	userLocks = 1
+end
+
+println("1: Use ASDF JKL;, 2: Use WASD MKL;, for weird layouts read code")
+userLayoutChoice = parse(Int, readline())
+if userLayoutChoice > 2
+	userLayoutChoice = 1
+end
+
+
+## end of new code area
 
 # ~~~ rng ~~~
 seed = 123456
@@ -197,7 +212,67 @@ traditionalLayoutMap = Dict{Int, Tuple{Float64, Float64, Int, Int, Int}}(
     45 =>  (10.75, 1.5, 4, 7, 0),
     46 =>  (11.75, 1.5, 4, 8, 0),
 )
+# traditional (x, y, row, finger, home)
+gamingLayoutMap = Dict{Int, Tuple{Float64, Float64, Int, Int, Int}}(
+    1 =>  (0.5, 4.5, 1, 1, 0),
+    2 =>  (1.5, 4.5, 1, 1, 0),
+    3 =>  (2.5, 4.5, 1, 1, 0),
+    4 =>  (3.5, 4.5, 1, 2, 0),
+    5 =>  (4.5, 4.5, 1, 3, 0),
+    6 =>  (5.5, 4.5, 1, 4, 0),
+    7 =>  (6.5, 4.5, 1, 4, 0),
+    8 =>  (7.5, 4.5, 1, 5, 0),
+    9 =>  (8.5, 4.5, 1, 6, 0),
+    10 => (9.5, 4.5, 1, 7, 0),
+    11 => (10.5, 4.5, 1, 8, 0),
+    12 => (11.5, 4.5, 1, 8, 0),
+    13 => (12.5, 4.5, 1, 8, 0),
 
+    14 =>  (2, 3.5, 2, 1, 0),
+    15 =>  (3, 3.5, 2, 2, 1),
+    16 =>  (4, 3.5, 2, 3, 0),
+    17 =>  (5, 3.5, 2, 4, 0),
+    18 =>  (6, 3.5, 2, 4, 0),
+    19 =>  (7, 3.5, 2, 5, 0),
+    20 =>  (8, 3.5, 2, 5, 0),
+    21 =>  (9, 3.5, 2, 6, 0),
+    22 =>  (10, 3.5, 2, 7, 0),
+    23 =>  (11, 3.5, 2, 8, 0),
+    24 =>  (12, 3.5, 2, 8, 0),
+    25 =>  (13, 3.5, 2, 8, 0),
+
+    26 =>  (2.25, 2.5, 3, 1, 1),
+    27 =>  (3.25, 2.5, 3, 2, 0),
+    28 =>  (4.25, 2.5, 3, 3, 1),
+    29 =>  (5.25, 2.5, 3, 4, 0),
+    30 =>  (6.25, 2.5, 3, 4, 0),
+    31 =>  (7.25, 2.5, 3, 5, 0),
+    32 =>  (8.25, 2.5, 3, 5, 0),
+    33 =>  (9.25, 2.5, 3, 6, 1),
+    34 =>  (10.25, 2.5, 3, 7, 1),
+    35 =>  (11.25, 2.5, 3, 8, 1),
+    36 =>  (12.25, 2.5, 3, 8, 0),
+
+    37 =>  (2.75, 1.5, 4, 1, 0),
+    38 =>  (3.75, 1.5, 4, 2, 0),
+    39 =>  (4.75, 1.5, 4, 3, 0),
+    40 =>  (5.75, 1.5, 4, 4, 0),
+    41 =>  (6.75, 1.5, 4, 4, 0),
+    42 =>  (7.75, 1.5, 4, 5, 0),
+    43 =>  (8.75, 1.5, 4, 5, 1),
+    44 =>  (9.75, 1.5, 4, 6, 0),
+    45 =>  (10.75, 1.5, 4, 7, 0),
+    46 =>  (11.75, 1.5, 4, 8, 0),
+)
+
+## LayoutSelector
+if userLayoutChoice == 1
+	userLayoutMap = traditionalLayoutMap
+elseif userLayoutChoice == 2
+	userLayoutMap = gamingLayoutMap
+end;
+
+##
 
 # comparisons
 QWERTYgenome = [
@@ -396,7 +471,6 @@ const letterList = [
     '>',
     '?'
 ]
-
 # map dictionary
 const keyMapDict = Dict(
     'a' => [1,0], 'A' => [1,1],
@@ -452,7 +526,7 @@ const handList = [1, 1, 1, 1, 2, 2, 2, 2] # what finger is with which hand
 # ### KEYBOARD FUNCTIONS ###
 function createGenome()
     # setup
-    myGenome = shuffle(rng, letterList)
+    myGenome = QWERTYgenome
 
     # return
     return myGenome
@@ -678,25 +752,38 @@ function shuffleGenome(currentGenome, temperature)
 
     # positions of switched letterList
     switchedPositions = randperm(rng, 46)[1:noSwitches]
+	if userLocks == 2
+		while switchedPositions[1] <= 11 || switchedPositions[2] <= 11
+			switchedPositions = randperm(rng,46)[1:2]
+		end
+	elseif userLocks == 3
+		# LOL I am sorry this boolean is so unbearably long but it needed to be exact for those pesky lil punctuations
+		while switchedPositions[1] <= 13 || 23 < switchedPositions[1] < 26 || 34 < switchedPositions[1] < 37 || 43 < switchedPositions[1] || switchedPositions[2] <= 13 || 23 < switchedPositions[2] < 26 || 34 < switchedPositions[2] < 37 || 43 < switchedPositions[2]
+			switchedPositions = randperm(rng,46)[1:2]
+		end
+	end
+	display(switchedPositions)
     newPositions = shuffle(rng, copy(switchedPositions))
 
-    # create new genome by shuffeling
+    # create new genome by shuffleing
     newGenome = copy(currentGenome)
     for i in 1:noSwitches
         og = switchedPositions[i]
         ne = newPositions[i]
-
+		
         newGenome[og] = currentGenome[ne]
+		
     end
 
     # return
+	
     return newGenome
 
 end
 
 
 function runSA(
-    layoutMap = traditionalLayoutMap;
+    layoutMap = userLayoutMap;
     baselineLayout = QWERTYgenome,
     temperature = 500,
     epoch = 20,
