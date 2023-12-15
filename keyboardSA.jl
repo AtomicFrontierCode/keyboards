@@ -762,7 +762,6 @@ function shuffleGenome(currentGenome, temperature)
 			switchedPositions = randperm(rng,46)[1:2]
 		end
 	end
-	display(switchedPositions)
     newPositions = shuffle(rng, copy(switchedPositions))
 
     # create new genome by shuffleing
