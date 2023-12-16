@@ -26,7 +26,7 @@ end
 ## end of new code area
 
 # ~~~ rng ~~~
-seed = 123456
+seed = Int(floor(time()))
 const rng = StableRNGs.LehmerRNG(seed)
 
 # ~~~ data ~~~
@@ -37,14 +37,8 @@ const distanceEffort = 1 # at 2 distance penalty is squared
 const doubleFingerEffort = 1
 const doubleHandEffort = 1
 
-const fingerCPM = [223, 169, 225, 273, 343, 313, 259, 241] # how many clicks can you do in a minute
-meanCPM = mean(fingerCPM)
-stdCPM = std(fingerCPM)
-zScoreCPM = -(fingerCPM .- meanCPM) ./ stdCPM # negative since higher is better
-const fingerEffort = zScoreCPM .- minimum(zScoreCPM)
 
-
-const rowCPM = [131, 166, 276, 192]
+const rowCPM = [383, 402, 402, 402]
 meanCPM = mean(rowCPM)
 stdCPM = std(rowCPM)
 zScoreCPM = -(rowCPM .- meanCPM) ./ stdCPM # negative since higher is better
@@ -214,11 +208,11 @@ traditionalLayoutMap = Dict{Int, Tuple{Float64, Float64, Int, Int, Int}}(
 )
 # traditional (x, y, row, finger, home)
 gamingLayoutMap = Dict{Int, Tuple{Float64, Float64, Int, Int, Int}}(
-    1 =>  (0.5, 4.5, 1, 1, 0),
-    2 =>  (1.5, 4.5, 1, 1, 0),
-    3 =>  (2.5, 4.5, 1, 1, 0),
-    4 =>  (3.5, 4.5, 1, 2, 0),
-    5 =>  (4.5, 4.5, 1, 3, 0),
+    1 =>  (0.5, 4.5, 1, 2, 0),
+    2 =>  (1.5, 4.5, 1, 2, 0),
+    3 =>  (2.5, 4.5, 1, 2, 0),
+    4 =>  (3.5, 4.5, 1, 4, 0),
+    5 =>  (4.5, 4.5, 1, 4, 0),
     6 =>  (5.5, 4.5, 1, 4, 0),
     7 =>  (6.5, 4.5, 1, 4, 0),
     8 =>  (7.5, 4.5, 1, 5, 0),
@@ -228,49 +222,55 @@ gamingLayoutMap = Dict{Int, Tuple{Float64, Float64, Int, Int, Int}}(
     12 => (11.5, 4.5, 1, 8, 0),
     13 => (12.5, 4.5, 1, 8, 0),
 
-    14 =>  (2, 3.5, 2, 1, 0),
-    15 =>  (3, 3.5, 2, 2, 1),
-    16 =>  (4, 3.5, 2, 3, 0),
+    14 =>  (2, 3.5, 2, 2, 0),
+    15 =>  (3, 3.5, 2, 3, 1),
+    16 =>  (4, 3.5, 2, 4, 0),
     17 =>  (5, 3.5, 2, 4, 0),
     18 =>  (6, 3.5, 2, 4, 0),
     19 =>  (7, 3.5, 2, 5, 0),
     20 =>  (8, 3.5, 2, 5, 0),
     21 =>  (9, 3.5, 2, 6, 0),
     22 =>  (10, 3.5, 2, 7, 0),
-    23 =>  (11, 3.5, 2, 8, 0),
-    24 =>  (12, 3.5, 2, 8, 0),
-    25 =>  (13, 3.5, 2, 8, 0),
+    23 =>  (11, 3.5, 2, 7, 0),
+    24 =>  (12, 3.5, 2, 7, 0),
+    25 =>  (13, 3.5, 2, 7, 0),
 
-    26 =>  (2.25, 2.5, 3, 1, 1),
-    27 =>  (3.25, 2.5, 3, 2, 0),
-    28 =>  (4.25, 2.5, 3, 3, 1),
+    26 =>  (2.25, 2.5, 3, 2, 1),
+    27 =>  (3.25, 2.5, 3, 3, 0),
+    28 =>  (4.25, 2.5, 3, 4, 1),
     29 =>  (5.25, 2.5, 3, 4, 0),
     30 =>  (6.25, 2.5, 3, 4, 0),
     31 =>  (7.25, 2.5, 3, 5, 0),
     32 =>  (8.25, 2.5, 3, 5, 0),
     33 =>  (9.25, 2.5, 3, 6, 1),
     34 =>  (10.25, 2.5, 3, 7, 1),
-    35 =>  (11.25, 2.5, 3, 8, 1),
-    36 =>  (12.25, 2.5, 3, 8, 0),
+    35 =>  (11.25, 2.5, 3, 7, 0),
+    36 =>  (12.25, 2.5, 3, 7, 0),
 
-    37 =>  (2.75, 1.5, 4, 1, 0),
-    38 =>  (3.75, 1.5, 4, 2, 0),
+    37 =>  (2.75, 1.5, 4, 2, 0),
+    38 =>  (3.75, 1.5, 4, 3, 0),
     39 =>  (4.75, 1.5, 4, 3, 0),
     40 =>  (5.75, 1.5, 4, 4, 0),
     41 =>  (6.75, 1.5, 4, 4, 0),
     42 =>  (7.75, 1.5, 4, 5, 0),
     43 =>  (8.75, 1.5, 4, 5, 1),
-    44 =>  (9.75, 1.5, 4, 6, 0),
-    45 =>  (10.75, 1.5, 4, 7, 0),
-    46 =>  (11.75, 1.5, 4, 8, 0),
+    44 =>  (9.75, 1.5, 4, 5, 0),
+    45 =>  (10.75, 1.5, 4, 6, 0),
+    46 =>  (11.75, 1.5, 4, 7, 0),
 )
 
 ## LayoutSelector
 if userLayoutChoice == 1
 	userLayoutMap = traditionalLayoutMap
+	const fingerCPM = [223, 169, 225, 273, 343, 313, 259, 241] # how many clicks can you do in a minute
 elseif userLayoutChoice == 2
 	userLayoutMap = gamingLayoutMap
-end;
+	const fingerCPM = [366, 402, 384, 402, 402, 414, 420, 366] # how many clicks can you do in a 
+end
+minutemeanCPM = mean(fingerCPM)
+stdCPM = std(fingerCPM)
+zScoreCPM = -(fingerCPM .- meanCPM) ./ stdCPM # negative since higher is better
+const fingerEffort = zScoreCPM .- minimum(zScoreCPM)
 
 ##
 
@@ -786,8 +786,8 @@ function runSA(
     baselineLayout = QWERTYgenome,
     temperature = 500,
     epoch = 20,
-    coolingRate = 0.99,
-    num_iterations = 25000,
+    coolingRate = 0.9999,
+    num_iterations = 500000,
     save_current_best = :plot,
     verbose = true,
 )
